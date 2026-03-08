@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DARK VOICE CLONER</title>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Bebas+Neue&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet"/>
+  <style>
+    :root {
+      --bg:      #080a0f;
+      --surface: #0e1117;
+      --panel:   #13181f;
+      --border:  #1e2530;
+      --accent:  #e63946;
+      --accent2: #ff6b35;
+      --glow:    rgba(230,57,70,0.18);
+      --text:    #c9d1d9;
+      --muted:   #4a5568;
+      --success: #39d353;
+      --mono:    'Share Tech Mono', monospace;
+      --display: 'Bebas Neue', sans-serif;
+      --body:    'DM Sans', sans-serif;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--body);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background-image:
+        linear-gradient(rgba(230,57,70,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(230,57,70,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none; z-index: 0;
+    }
+    body::after {
+      content: '';
+      position: fixed; inset: 0;
+      background: radial-gradient(ellipse at center, transparent 40%, rgba(8,10,15,0.85) 100%);
+      pointer-events: none; z-index: 0;
+    }
+    .container {
+      position: relative; z-index: 1;
+      max-width: 860px; margin: 0 auto;
+      padding: 40px 24px 80px;
+    }
+    header {
+      text-align: center; margin-bottom: 48px;
+      animation: fadeDown 0.7s ease both;
+    }
+    .logo-line {
+      display: flex; align-items: center;
+      justify-content: center; gap: 14px; margin-bottom: 8px;
+    }
+    .logo-icon {
+      width: 38px; height: 38px;
+      border: 2px solid var(--accent); border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 16px var(--glow);
+      animation: pulse 2.4s ease-in-out infinite;
+    }
+    .logo-icon svg { width: 18px; height: 18px; fill: var(--accent); }
+    h1 {
+      font-family: var(--display);
+      font-size: clamp(2.6rem, 6vw, 4.2rem);
+      letter-spacing: 0.12em;
+      background: linear-gradient(135deg, #fff 30%, var(--accent) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; line-height: 1;
+    }
+    .tagline {
+      font-family: var(--mono); font-size: 0.72rem;
+      color: var(--muted); letter-spacing: 0.22em;
+      text-transform: uppercase; margin-top: 10px;
+    }
+    .panel {
+      background: var(--panel); border: 1px solid var(--border);
+      border-radius: 12px; padding: 28px 28px 24px;
+      margin-bottom: 20px; position: relative; overflow: hidden;
+      animation: fadeUp 0.6s ease both;
+    }
+    .panel::before {
+      content: ''; position: absolute;
+      top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--accent), transparent);
+      opacity: 0.5;
+    }
+    .panel:nth-child(2) { animation-delay: 0.1s; }
+    .panel:nth-child(3) { animation-delay: 0.2s; }
+    .panel:nth-child(4) { animation-delay: 0.3s; }
+    .panel-label {
+      font-family: var(--mono); font-size: 0.65rem;
+      letter-spacing: 0.2em; text-transform: uppercase;
+      color: var(--accent); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .panel-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+    .drop-zone {
+      border: 2px dashed var(--border); border-radius: 10px;
+      padding: 36px 20px; text-align: center; cursor: pointer;
+      transition: all 0.25s ease; position: relative; background: var(--bg);
+    }
+    .drop-zone:hover, .drop-zone.drag-over {
+      border-color: var(--accent); background: rgba(230,57,70,0.04);
+      box-shadow: 0 0 24px var(--glow);
+    }
+    .drop-zone input[type="file"] {
+      position: absolute; inset: 0; opacity: 0;
+      cursor: pointer; width: 100%; height: 100%;
+    }
+    .drop-icon { font-size: 2.2rem; margin-bottom: 10px; display: block; }
+    .drop-text { font-size: 0.88rem; color: var(--muted); line-height: 1.6; }
+    .drop-text strong { color: var(--text); }
+    #file-name {
+      margin-top: 14px; font-family: var(--mono);
+      font-size: 0.72rem; color: var(--accent2); display: none;
+    }
+    .lang-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 8px;
+    }
+    .lang-btn {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 9px 12px; color: var(--muted);
+      font-family: var(--body); font-size: 0.82rem;
+      cursor: pointer; transition: all 0.2s ease;
+    }
+    .lang-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(230,57,70,0.05); }
+    .lang-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(230,57,70,0.08); box-shadow: 0 0 12px var(--glow); }
+    textarea {
+      width: 100%; background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 14px 16px; color: var(--text);
+      font-family: var(--body); font-size: 0.92rem;
+      line-height: 1.7; resize: vertical; min-height: 160px;
+      outline: none; transition: border-color 0.2s ease;
+    }
+    textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--glow); }
+    textarea::placeholder { color: var(--muted); }
+    .char-count { font-family: var(--mono); font-size: 0.65rem; color: var(--muted); text-align: right; margin-top: 6px; }
+    .char-count.warn { color: var(--accent2); }
+    .char-count.danger { color: var(--accent); }
+    .generate-btn {
+      width: 100%; padding: 18px; background: var(--accent);
+      border: none; border-radius: 10px; color: #fff;
+      font-family: var(--display); font-size: 1.5rem;
+      letter-spacing: 0.12em; cursor: pointer;
+      transition: all 0.25s ease; margin-top: 8px;
+    }
+    .generate-btn:hover:not(:disabled) {
+      background: #c1121f; box-shadow: 0 8px 32px rgba(230,57,70,0.4);
+      transform: translateY(-2px);
+    }
+    .generate-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+    #progress-section { display: none; margin-top: 20px; }
+    .progress-wrap {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 8px; overflow: hidden; height: 6px; margin-bottom: 10px;
+    }
+    .progress-bar {
+      height: 100%; background: linear-gradient(90deg, var(--accent), var(--accent2));
+      border-radius: 8px; width: 0%; transition: width 0.4s ease;
+    }
+    #progress-text { font-family: var(--mono); font-size: 0.72rem; color: var(--muted); text-align: center; }
+    #result-section {
+      display: none; margin-top: 20px; background: var(--panel);
+      border: 1px solid rgba(57,211,83,0.2); border-radius: 12px;
+      padding: 24px 28px; animation: fadeUp 0.4s ease both; position: relative;
+    }
+    #result-section::before {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+      background: linear-gradient(90deg, transparent, var(--success), transparent); opacity: 0.6;
+    }
+    .result-label {
+      font-family: var(--mono); font-size: 0.65rem; letter-spacing: 0.2em;
+      text-transform: uppercase; color: var(--success); margin-bottom: 16px;
+      display: flex; align-items: center; gap: 8px;
+    }
+    .result-label::after { content: ''; flex: 1; height: 1px; background: rgba(57,211,83,0.15); }
+    audio { width: 100%; margin-bottom: 14px; border-radius: 6px; }
+    .download-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 12px; background: transparent;
+      border: 1px solid var(--success); border-radius: 8px; color: var(--success);
+      font-family: var(--mono); font-size: 0.8rem; letter-spacing: 0.1em;
+      text-decoration: none; cursor: pointer; transition: all 0.2s ease;
+    }
+    .download-btn:hover { background: rgba(57,211,83,0.08); box-shadow: 0 0 16px rgba(57,211,83,0.2); }
+    #error-msg {
+      display: none; margin-top: 16px; padding: 14px 18px;
+      background: rgba(230,57,70,0.08); border: 1px solid rgba(230,57,70,0.3);
+      border-radius: 8px; font-family: var(--mono); font-size: 0.78rem; color: var(--accent);
+    }
+    .tips { margin-top: 14px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .tip { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+    .tip strong { color: var(--accent2); display: block; margin-bottom: 3px; }
+    @keyframes fadeDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeUp   { from { opacity: 0; transform: translateY(16px);  } to { opacity: 1; transform: translateY(0); } }
+    @keyframes pulse    { 0%,100% { box-shadow: 0 0 12px var(--glow); } 50% { box-shadow: 0 0 28px rgba(230,57,70,0.5); } }
+    @keyframes spin     { to { transform: rotate(360deg); } }
+    .spinner { display: inline-block; width: 14px; height: 14px; border: 2px solid rgba(255,255,255,0.3); border-top-color: #fff; border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 8px; }
+    @media (max-width: 560px) { .tips { grid-template-columns: 1fr; } .lang-grid { grid-template-columns: repeat(3, 1fr); } }
+  </style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="logo-line">
+      <div class="logo-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3zm-1 3a1 1 0 0 1 2 0v8a1 1 0 0 1-2 0V4zM7 11a5 5 0 0 0 10 0h2a7 7 0 0 1-6 6.92V20h3v2H8v-2h3v-2.08A7 7 0 0 1 5 11h2z"/></svg>
+      </div>
+      <h1>DARK VOICE CLONER</h1>
+    </div>
+    <p class="tagline">// Clone qualquer voz · 100% local · sem limites</p>
+  </header>
+
+  <div class="panel">
+    <div class="panel-label">01 — Escolha a Voz</div>
+    <div class="lang-grid" id="voice-grid">
+      {% for code, name in voices.items() %}
+      <button class="lang-btn {% if code == 'pm_alex' %}active{% endif %}"
+              data-voice="{{ code }}" onclick="selectVoice(this)">{{ name }}</button>
+      {% endfor %}
+    </div>
+    <input type="hidden" id="selected-voice" value="pm_alex"/>
+    <div style="margin-top:14px;display:flex;align-items:center;gap:12px;">
+      <span style="font-family:var(--mono);font-size:0.68rem;color:var(--muted);white-space:nowrap;">VELOCIDADE</span>
+      <input type="range" id="speed-range" min="0.5" max="2.0" step="0.1" value="1.0"
+             oninput="document.getElementById('speed-val').textContent=this.value+'x'"
+             style="flex:1;accent-color:var(--accent)"/>
+      <span id="speed-val" style="font-family:var(--mono);font-size:0.72rem;color:var(--accent);width:32px">1.0x</span>
+    </div>
+  </div>
+
+  <div class="panel">
+    <div class="panel-label">02 — Roteiro / Texto</div>
+    <textarea id="script-text" placeholder="Cole ou escreva o roteiro aqui..." oninput="updateCharCount()"></textarea>
+    <div class="char-count" id="char-count">0 / 8000 caracteres</div>
+  </div>
+
+  <button class="generate-btn" id="gen-btn" onclick="generate()">GERAR AUDIO</button>
+
+  <div id="progress-section">
+    <div class="progress-wrap"><div class="progress-bar" id="progress-bar"></div></div>
+    <div id="progress-text">Processando...</div>
+  </div>
+
+  <div id="error-msg"></div>
+
+  <div id="result-section">
+    <div class="result-label">Audio Gerado com Sucesso</div>
+    <audio id="result-audio" controls></audio>
+    <a class="download-btn" id="download-btn" href="#" download>BAIXAR AUDIO (.wav)</a>
+  </div>
+</div>
+
+<script>
+  function selectVoice(btn) {
+    document.querySelectorAll('.lang-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('selected-voice').value = btn.dataset.voice;
+  }
+
+  function updateCharCount() {
+    const n  = document.getElementById('script-text').value.length;
+    const el = document.getElementById('char-count');
+    el.textContent = n + ' / 8000 caracteres';
+    el.className   = 'char-count' + (n > 7000 ? ' danger' : n > 5500 ? ' warn' : '');
+  }
+
+  let progressInterval;
+  function startProgress() {
+    let pct = 0;
+    const msgs = ['Carregando modelo...','Processando texto...','Sintetizando fala...','Finalizando audio...'];
+    let mi = 0;
+    progressInterval = setInterval(() => {
+      if (pct < 90) pct += 1.2;
+      document.getElementById('progress-bar').style.width = pct + '%';
+      if (mi < msgs.length && pct > (mi+1)*20) { document.getElementById('progress-text').textContent = msgs[mi++]; }
+    }, 300);
+  }
+
+  function endProgress(ok) {
+    clearInterval(progressInterval);
+    document.getElementById('progress-bar').style.width = '100%';
+    document.getElementById('progress-text').textContent = ok ? 'Concluido!' : 'Erro.';
+  }
+
+  async function generate() {
+    const text  = document.getElementById('script-text').value.trim();
+    const voice = document.getElementById('selected-voice').value;
+    const speed = document.getElementById('speed-range').value;
+
+    if (!text) { showError('Digite o roteiro.'); return; }
+
+    hideError();
+    document.getElementById('result-section').style.display = 'none';
+    document.getElementById('progress-section').style.display = 'block';
+    document.getElementById('gen-btn').disabled = true;
+    document.getElementById('gen-btn').innerHTML = '<span class="spinner"></span>PROCESSANDO...';
+    startProgress();
+
+    const form = new FormData();
+    form.append('text', text);
+    form.append('voice', voice);
+    form.append('speed', speed);
+
+    try {
+      const res  = await fetch('/generate', { method: 'POST', body: form });
+      const data = await res.json();
+      endProgress(res.ok);
+      if (!res.ok || data.error) { showError('Erro: ' + (data.error || 'Desconhecido')); }
+      else { showResult(data.audio_url, data.filename); }
+    } catch (e) {
+      endProgress(false);
+      showError('Falha na conexao com o servidor.');
+    } finally {
+      document.getElementById('gen-btn').disabled = false;
+      document.getElementById('gen-btn').innerHTML = 'GERAR AUDIO';
+    }
+  }
+
+  function showResult(url, filename) {
+    const sec = document.getElementById('result-section');
+    document.getElementById('result-audio').src = url;
+    document.getElementById('download-btn').href = '/download/' + filename;
+    document.getElementById('download-btn').download = filename;
+    sec.style.display = 'block';
+    sec.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  function showError(msg) {
+    const el = document.getElementById('error-msg');
+    el.textContent = msg; el.style.display = 'block';
+  }
+
+  function hideError() { document.getElementById('error-msg').style.display = 'none'; }
+</script>
+</body>
+</html>
